@@ -9,11 +9,9 @@
 	<link rel="stylesheet" type="text/css" href="shooter.css">
 	<script type="text/javascript">
 		$(document).ready(function(){
-			player = new O_robot("player","robot1");
-			ebot = new opfor("ebot","opfor");
-			player.spawn();
-			ebot.spawn();
-			setInterval(gameLoop,50);
+			g = new game();
+			g.init();
+			setInterval(gameLoop,75);
 		});
 	</script>
 

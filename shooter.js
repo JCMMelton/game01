@@ -1,11 +1,8 @@
 
 
 function gameLoop(){
-	player.re_crop();
-	if(player.b_active){
-		player.move_bullet();
-	};
-	ebot.test();
+	player.game_func();
+	g.team_test();
 };
 
 document.onkeydown = function(k){
@@ -144,6 +141,12 @@ function O_robot(name, html_id){
 	this.draw_bullet = function(top,left){
 		$("#"+'bullet').css('background', "url('shooter_bullet.png') "+left*(-100)+"px "+top*(-100)+"px").css('left', this.bx_pos+"px");
 	};
+	this.game_func = function(){
+		this.re_crop();
+		if(this.b_active){
+			this.move_bullet();
+		};
+	};
 };
 
 function opfor(name, html_id){
@@ -160,7 +163,7 @@ function opfor(name, html_id){
 		this.box.width = 95;
 		this.box.id = html_id;
 		document.body.appendChild(this.box);
-		$("#"+this.id).css('background', "url('shooter_opfor.png') 0px 0px");	
+		$("#"+this.id).css('background', "url('shooter_opfor.png') 0px 0px").css('width', '100px').css('height', '100px').css('display','inline-block').css('position','absolute');	
 	};
 	var right_action ={
 		'standing': {'y': 0 , 'x': [0,0,0,0,0,0,0,0,2,0,0,0]},
@@ -179,7 +182,7 @@ function opfor(name, html_id){
 		}else if(this.x_pos < 0){
 			facing = 'right';
 		};
-		
+
 		if(facing == 'right'){
 			if(counter >= right_action[this.action].x.length){
 			counter = 0;
@@ -200,7 +203,33 @@ function opfor(name, html_id){
 	};
 }
 
+function game(){
+	this.opfor_team = new Array();
 
+	this.init = function(){
+		player = new O_robot("player","robot1");
+		player.spawn();
+
+		this.spawn_opfor();
+	};
+
+	this.spawn_opfor = function(){
+		var idn = this.opfor_team.length;
+		var name = "ebot"+idn;
+		var html_id = "opfor"+idn;
+		name = new opfor(name,html_id);
+		this.opfor_team.push(name);
+		name.spawn();
+	};
+	this.team_test = function(){
+		for(var i=0;i<this.opfor_team.length;i++){
+			this.opfor_team[i].test();
+		}
+	};
+	/*this.hit = function(){
+
+	}*/
+};
 
 
 
