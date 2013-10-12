@@ -6,3 +6,19 @@
 	top:0px;
 	left:0px;
 }
+#bullet{
+	height: 100px;
+	width: 100px;
+	display: inline-block;
+	position: absolute;
+	top:0px;
+	left:0px;
+}
+#opfor{
+	height: 100px;
+	width: 100px;
+	display: inline-block;
+	position: absolute;
+	top:0px;
+	left:0px;
+}

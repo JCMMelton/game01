@@ -10,8 +10,10 @@
 	<script type="text/javascript">
 		$(document).ready(function(){
 			player = new O_robot("player","robot1");
+			ebot = new opfor("ebot","opfor");
 			player.spawn();
-			setInterval(gameLoop,150);
+			ebot.spawn();
+			setInterval(gameLoop,50);
 		});
 	</script>
 
@@ -20,10 +22,6 @@
 
 </head>
 <body>
-	<!-- <div style="background: url('shooter_bot.png') 0px 0px; width:100px; height:100px;"></div>
-	<div style="background: url('shooter_bot.png') 0px -100px; width:100px; height:100px;"></div>
-	<div style="background: url('shooter_bot.png') -100px 0px; width:100px; height:100px;"></div>
-	<div style="background: url('shooter_bot.png') -100px -100px; width:100px; height:100px;"></div>
- -->
+	
 </body>
 </html>
