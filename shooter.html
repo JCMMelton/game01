@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title>Blank Shooter</title>
+	
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+	<script type="text/javascript" src="shooter.js"></script>
+	<link rel="stylesheet" type="text/css" href="shooter.css">
+	<script type="text/javascript">
+		$(document).ready(function(){
+			player = new O_robot("player","robot1");
+			player.spawn();
+			setInterval(gameLoop,150);
+		});
+	</script>
+
+	
+
+
+</head>
+<body>
+	<!-- <div style="background: url('shooter_bot.png') 0px 0px; width:100px; height:100px;"></div>
+	<div style="background: url('shooter_bot.png') 0px -100px; width:100px; height:100px;"></div>
+	<div style="background: url('shooter_bot.png') -100px 0px; width:100px; height:100px;"></div>
+	<div style="background: url('shooter_bot.png') -100px -100px; width:100px; height:100px;"></div>
+ -->
+</body>
+</html>
