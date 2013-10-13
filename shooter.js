@@ -79,7 +79,7 @@ function O_robot(name, html_id){
 	var counter = 0;
 	var action_right = {
 		'standing': {'y': 0 , 'x': [0,1,2,1]},
-		'shooting': {'y': 2 , 'x': [0,1,2]},
+		'shooting': {'y': 2 , 'x': [0,1,2,3,2,3]},
 		'running': {'y': 1 , 'x': [0,1,2,3,4,5,6,7,8,9]},
 		'jumping': {'y': 4 , 'x': [0,1,2,1,2,1,2,1,2,1,2]},
 		'falling': {'y': 4, 'x':[6,6,7,7,6,6,7,7,6,7]}
@@ -87,7 +87,7 @@ function O_robot(name, html_id){
 	};
 	var action_left = {
 		'standing': {'y': 0 , 'x': [3,4,5,4]},
-		'shooting': {'y': 2 , 'x': [5,4,3]},
+		'shooting': {'y': 2 , 'x': [7,6,5,4,5,4]},
 		'running': {'y': 3 , 'x': [9,8,7,6,5,4,3,2,1,0]},
 		'jumping': {'y': 4 , 'x': [5,4,3,4,3,4,3,4,3,4,3]},
 		'falling': {'y': 4, 'x':[8,8,9,9,8,8,9,9,8,9]}
@@ -165,7 +165,7 @@ function O_robot(name, html_id){
 				
 			}
 		}else if(action == 'shooting'){
-			if(counter > 2){
+			if(counter > 6){
 				counter=2;
 				
 			}
@@ -244,7 +244,7 @@ function O_robot(name, html_id){
 		}else{
 			this.bx_pos -= 20;
 		}
-		if(this.bx_pos > 900 || this.bx_pos < 0){
+		if(this.bx_pos > 950 || this.bx_pos < 25){
 			this.b_action = 'death';
 		}
 	};
