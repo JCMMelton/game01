@@ -2,13 +2,13 @@
 
 function gameLoop(){
 	player.game_func();
-	//player.falling = true;
+	
 	g.is_falling(player);
-	//g.team_update();
-	//g.is_hit();
+	g.team_update();
+	g.is_hit();
 };
-
-document.onkeydown = function(k){
+/*
+document.checkkey = function(k){
 		if(k.keyCode == 90){
 			player.update_status('shooting',player.facing);
 			player.spawn_bullet();
@@ -16,11 +16,43 @@ document.onkeydown = function(k){
 			player.update_status('running','right');
 		}else if(k.keyCode == 37){
 			player.update_status('running','left');
-		}else if(k.keyCode == 38){
+		}else if(k.keyCode == 38 && player.action != 'jumping'){
 			player.update_status('jumping',player.facing);
 		}else{
 			player.update_status('standing',player.facing);
 		}
+};*/
+document.onkeydown = function(k){
+	
+	switch(k.keyCode){
+		case 90:
+			player.update_status('shooting',player.facing);
+			player.spawn_bullet();
+			break;
+		case 39:
+			if(player.action == 'jumping'){
+				player.update_status('jumping','right');
+				break;
+			}
+			player.update_status('running','right');
+			break;
+		case 37:
+			if(player.action == 'jumping'){
+				player.update_status('jumping','left');
+				break;
+			}
+			player.update_status('running','left');
+			break;
+		case 38:
+			if(player.action == 'jumping'){
+				break;
+			}
+			player.update_status('jumping',player.facing);
+			break;
+	}
+};
+document.onkeyup = function(k){
+	player.update_status('standing',player.facing);
 };
 
 function O_robot(name, html_id){
@@ -49,56 +81,72 @@ function O_robot(name, html_id){
 		'standing': {'y': 0 , 'x': [0,1,2,1]},
 		'shooting': {'y': 2 , 'x': [0,1,2]},
 		'running': {'y': 1 , 'x': [0,1,2,3,4,5,6,7,8,9]},
-		'jumping': {'y': 1 , 'x': [3,4,3,4,3,4,3,4,3,4]}
+		'jumping': {'y': 4 , 'x': [0,1,2,1,2,1,2,1,2,1,2]},
+		'falling': {'y': 4, 'x':[6,6,7,7,6,6,7,7,6,7]}
+
 	};
 	var action_left = {
 		'standing': {'y': 0 , 'x': [3,4,5,4]},
 		'shooting': {'y': 2 , 'x': [5,4,3]},
 		'running': {'y': 3 , 'x': [9,8,7,6,5,4,3,2,1,0]},
-		'jumping': {'y': 3 , 'x': [3,4,4,4,4,4,4,4,4,4]}
+		'jumping': {'y': 4 , 'x': [5,4,3,4,3,4,3,4,3,4,3]},
+		'falling': {'y': 4, 'x':[8,8,9,9,8,8,9,9,8,9]}
 	};
-	this.spawn = function(){
+	this.spawn = function(sy,sx){
 		this.box = document.createElement("DIV");
 		this.box.height = 95;
 		this.box.width = 95;
 		this.box.id = this.name;
 		document.body.appendChild(this.box);
-		$("#"+this.name).css('background', "url('shooter.png') 0px 0px").css('top', '410px').css('left', '200px');	
+		$("#"+this.name).css('background', "url('shooter.png') 0px 0px").css('top', sy+'px').css('left', sx+'px');	
 	};
 	this.drawSprite = function(top,left){
 		$("#"+this.name).css('background', "url('shooter.png') "+left*(-100)+"px "+top*(-100)+"px").css('left', this.x_pos+"px").css('top', this.y_pos+"px");
 	};
 	this.update_status = function(action, facing){
-		counter=0;
+		//counter=0;
 		this.action = action;
 		this.facing = facing;
 	};
 	this.move =function(action, facing){
+		
+		var allow_xl = allow_xr = allow_yd =allow_yu = true;
+		if(this.x_pos > 910){allow_xr = false;};
+		if(this.x_pos < 10){allow_xl = false;}; 
+		if(this.y_pos > 590){allow_yd = false;};
+		if(this.y_pos < 10){allow_yu = false;};
+		this.count(this.action);
+		//console.log(allow_xr,allow_xl);
+		//if(allow_x){};
+		//if(allow_y){};
 		if(this.falling){
-			this.y_pos +=15;
+			this.action = 'falling';
+			if(allow_yd){this.y_pos +=15;};
 		}else
 			if(action == 'jumping'){
-				this.count(this.action);
+				
 				if(counter == 0){
 					this.action = 'standing';
 				}
 				if(facing == 'right'){
-					this.x_pos +=15;
+					if(allow_xr){this.x_pos +=15;};
 					this.y_pos -=10;
 				}else if(facing =='left'){
-					this.x_pos -=15;
+					if(allow_xl){this.x_pos -=15;};
 					this.y_pos -=10;			
+				}else{
+					this.y_pos -=15;
 				}
 			}else{
-				this.count(this.action);
+				//this.count(this.action);
 				if(counter == 0){
 					this.action = 'standing';
 				}
 				if(action == 'running'){
 					if(facing == 'right'){
-						this.x_pos +=15;
+						if(allow_xr){this.x_pos +=15;};
 					}else if(facing =='left'){
-						this.x_pos -=15;
+						if(allow_xl){this.x_pos -=15;};
 					}
 				}
 			};
@@ -107,21 +155,29 @@ function O_robot(name, html_id){
 	this.count = function(action){
 		if(action == 'jumping'){
 			if(counter >9){
-				counter = 0;
+				counter = 2;
+				
 			}
 		}else
 		if(action == 'running'){
 			if(counter > 9){
 				counter=2;
+				
 			}
 		}else if(action == 'shooting'){
 			if(counter > 2){
 				counter=2;
+				
+			}
+		}else if(action == 'falling'){
+			if(counter > 9){
+				counter = 0;
 			}
 		}
 		else{
 				if(counter>3){
 					counter=0;
+					
 				}
 			}
 		
@@ -151,15 +207,18 @@ function O_robot(name, html_id){
 		this.box.width = 40;
 		this.box.id = 'bullet';
 		document.body.appendChild(this.box);
-		$("#"+'bullet').css('background', "url('shooter_bullet.png') 0px " + this.x_pos +"px").css('left', this.x_pos + "px").css('top', this.y_pos+30+"px").css('height','40px').css('width','40px');	
-		this.b_active = 1;
-		this.b_facing = this.facing;
 		this.by_pos = this.y_pos;
 		if(this.facing == 'right'){
 			this.bx_pos = this.x_pos+70;
 			}else{
 				this.bx_pos = this.x_pos;
 			}	
+
+		$("#"+'bullet').css('background', "url('shooter_bullet.png') 0px " + this.bx_pos +"px").css('left', this.bx_pos + "px").css('top', this.by_pos+30+"px").css('height','40px').css('width','40px');	
+		this.b_active = 1;
+		this.b_facing = this.facing;
+		
+		
 		
 		};
 
@@ -185,7 +244,7 @@ function O_robot(name, html_id){
 		}else{
 			this.bx_pos -= 20;
 		}
-		if(this.bx_pos > 1000 || this.bx_pos < 0){
+		if(this.bx_pos > 900 || this.bx_pos < 0){
 			this.b_action = 'death';
 		}
 	};
@@ -218,15 +277,16 @@ function opfor(name, html_id,idnum){
 	var d_counter = 0;
 	this.hitbox = {'height': 100,
 					'width': 70};
-	var facing = 'left';
+	var facing = 'right';
+	this.falling = true;
 	this.action = "running";
-	this.spawn = function(){
+	this.spawn = function(sx,sy){
 		this.box = document.createElement("DIV");
 		this.box.height = 95;
 		this.box.width = 95;
 		this.box.id = html_id;
 		document.body.appendChild(this.box);
-		$("#"+this.id).css('background', "url('shooter_opfor.png') 0px 0px").css('width', '100px').css('height', '100px').css('display','inline-block').css('position','absolute');	
+		$("#"+this.id).css('background', "url('shooter_opfor.png') 0px 0px").css('width', '100px').css('height', '100px').css('display','inline-block').css('position','absolute').css('left',sx+"px").css('top',sy+"px");	
 	};
 	var right_action ={
 		'standing': {'y': 0 , 'x': [0,0,0,0,0,0,0,0,2,0,0,0]},
@@ -240,20 +300,25 @@ function opfor(name, html_id,idnum){
 		'death': {'y': 3 , 'x': [0,1,2,3,4,5,6,7,8,9]}
 	}
 	this.drawSprite = function(top,left){
-		$("#"+this.id).css('background', "url('shooter_opfor.png') "+left*(-100)+"px "+top*(-100)+"px").css('left', this.x_pos+"px");
+		$("#"+this.id).css('background', "url('shooter_opfor.png') "+left*(-100)+"px "+top*(-100)+"px").css('left', this.x_pos+"px").css('top', this.y_pos+"px");
 	};
 	this.update = function(){
+		
 		if(this.action == 'death'){
-			console.log(this.name, this.action, this.id, counter, d_counter);
+			//console.log(this.name, this.action, this.id, counter, d_counter);
 			for(var z in g.opfor_team){
 				
-				console.log(g.opfor_team[z]);
+				//console.log(g.opfor_team[z]);
 			};
 			if(d_counter >= misc_action[this.action].x.length){
 				d_counter = 0;
+				this.x_pos = -100;
+				this.y_pos = -100;
+				this.hitbox['height'] = 0;
+				this.hitbox['width'] = 0;
 				this.action = 'dead';
 				
-				console.log(this.name);	
+				//console.log(this.name);	
 				
 				$("#"+this.id).remove();
 				
@@ -261,7 +326,17 @@ function opfor(name, html_id,idnum){
 				this.drawSprite(misc_action[this.action].y, misc_action[this.action].x[d_counter++]);
 			};
 		}else{
-			if(this.x_pos > 1000){
+				var allow_xl = allow_xr = allow_yd =allow_yu = true;
+				if(this.x_pos > 910){allow_xr = false;};
+				if(this.x_pos < 10){allow_xl = false;}; 
+				if(this.y_pos > 590){allow_yd = false;};
+				if(this.y_pos < 10){allow_yu = false;};
+
+
+			if(this.falling){
+				if(allow_yd){this.y_pos+=15;};
+			}
+			if(this.x_pos > 900){
 				facing = 'left';
 			}else if(this.x_pos < 0){
 				facing = 'right';
@@ -283,6 +358,7 @@ function opfor(name, html_id,idnum){
 				this.drawSprite(left_action[this.action].y, left_action[this.action].x[counter++]);
 				this.x_pos -= 12;
 			};
+			if(this.y_pos > 590){this.action='death'};
 		};
 	};
 };
@@ -290,13 +366,15 @@ function opfor(name, html_id,idnum){
 function game(){
 	this.opfor_team = new Array();
 	this.spawn_timer = 0;
+	m = new O_map();
 	var idnum = 0;
+
 	this.init = function(){
-		var m = new O_map();
+		
 		m.drawmap();
-		m.lay_floor();
+		m.build_floors();
 		player = new O_robot("player","robot1");
-		player.spawn();
+		player.spawn(m.mapinfo.map1.player_start[0],m.mapinfo.map1.player_start[1]);
 		//this.spawn_opfor();
 	};
 
@@ -309,10 +387,12 @@ function game(){
 		name.action = 'running';
 		this.opfor_team.splice(this.ind,0,name);
 		
-		name.spawn();
+		name.spawn(m.mapinfo.map1.opfor_start[0],m.mapinfo.map1.opfor_start[1]);
 	};
 	this.team_update = function(){
-		
+		for(z in g.opfor_team){
+			g.is_falling(g.opfor_team[z]);
+		};
 		for(var zz in this.opfor_team){
 			if(this.opfor_team[zz].action !='dead'){
 				this.opfor_team[zz].update();
@@ -340,7 +420,7 @@ function game(){
 		var test_box2 = item2.hitbox;
 		var x2 = item2.x_pos;
 		var y2 = item2.y_pos;
-
+		console.log(x1,x2,' :: ',y1,y2);
 		if((x1 >= x2+test_box2['width'])||(x1 <= x2)){
 			return false;
 		}
@@ -378,15 +458,21 @@ function game(){
 		};
 	};
 	this.is_falling = function(item){
+		//console.log(item.y_pos+item.hitbox['height'], item.x_pos);
+		var on_floor = false;
 		$('.floor').each(function(){
 			var floor = $(this);
 			
-			console.log(item.y_pos, item.x_pos);
-			console.log(floor.offset().top, floor.offset().left, floor.outerWidth());
-			if((floor.offset().top == item.y_pos+100)&&((floor.offset().left + floor.outerWidth()) >= item.x_pos+50 && floor.offset().left <= item.x_pos)){
+			
+			//console.log(floor.offset().top, floor.offset().left, floor.outerWidth());
+			if(((floor.offset().top >= (item.y_pos+item.hitbox['height']) && floor.offset().top-20 <= item.y_pos + item.hitbox['height'] -10 )&&((floor.offset().left + floor.outerWidth()) >= item.x_pos+item.hitbox['width'] && floor.offset().left <= item.x_pos+item.hitbox['width']))||(item.action == 'jumping')){
+				
 				item.falling = false;
+				on_floor = true;
 			}else{
+				if(!on_floor){
 				item.falling = true;
+				};
 			};
 		});
 
@@ -399,8 +485,16 @@ function O_map(){
 	this.mapinfo = {
 		'map1': {'file': 'map_1.png',
 				'dimentions': [1000,1000],
-				'player_start': [200,800],
-				'floors': {'y': 5, 'x': [1,5]}
+				'player_start': [400,200],
+				'opfor_start':	[100,0],		
+
+			'floors': [{'y': 5, 'x': [1,5]},
+						{'y': 4, 'x': [.5,1.5]},
+						{'y': 4, 'x': [7,2]},
+						{'y': 3, 'x': [3,1]},
+						{'y': 2, 'x': [4,2]},
+						{'y': 1, 'x': [1,2]},
+						{'y': 6.8, 'x': [0,10]}]
 			}
 		};
 	this.drawmap = function(){
@@ -413,13 +507,20 @@ function O_map(){
 		$("#map").css('background', 'URL(' + this.mapinfo.map1.file + ') 0px 0px').css('top', '-300px');
 	};
 
-	this.lay_floor = function(){
+	this.lay_floor = function(yf,xf0,xf1){
 		this.id = 'floor' + this.floorcount++;
 		this.box = document.createElement("DIV");
 		this.box.id = this.id;
 		document.body.appendChild(this.box);
-		$("#"+this.id).css('display','inline-block').css('position','absolute').css('left', (this.mapinfo.map1.floors.x[0] * 100)+10 +'px').css('top', (this.mapinfo.map1.floors.y * 100)+10 + "px").css('width', this.mapinfo.map1.floors.x[1]*100 + 'px').css('height', '1px').addClass('floor');
+		$("#"+this.id).css('display','inline-block').css('position','absolute').css('left', (xf0 * 100)+10 +'px').css('top', (yf * 100)+10 + "px").css('width', xf1*100 + 'px').css('height', '10px').addClass('floor');
 		
+	};
+	this.build_floors = function(){
+		//console.log();
+		for(f in this.mapinfo.map1.floors){
+			//console.log(this.mapinfo.map1.floors[f]);
+			this.lay_floor(this.mapinfo.map1.floors[f].y, this.mapinfo.map1.floors[f].x[0], this.mapinfo.map1.floors[f].x[1]);
+		}
 	};
 };
 

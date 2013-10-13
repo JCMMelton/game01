@@ -16,7 +16,16 @@
 	left:0px;
 	z-index: 6;
 }
-
 #map{
 	z-index: 1;
+}
+
+/*
+.floor{
+	z-index: 15;
+	background-color: red;
+}*/
+.floor{
+	z-index: -1;
+	
 }
