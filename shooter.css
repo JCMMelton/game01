@@ -5,6 +5,7 @@
 	position: absolute;
 	top:0px;
 	left:0px;
+	z-index: 5;
 }
 #bullet{
 	height: 100px;
@@ -13,12 +14,9 @@
 	position: absolute;
 	top:0px;
 	left:0px;
+	z-index: 6;
 }
-/*#opfor{
-	height: 100px;
-	width: 100px;
-	display: inline-block;
-	position: absolute;
-	top:0px;
-	left:0px;
-}*/
+
+#map{
+	z-index: 1;
+}
