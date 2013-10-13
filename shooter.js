@@ -279,6 +279,7 @@ function opfor(name, html_id,idnum){
 					'width': 70};
 	var facing = 'right';
 	this.falling = true;
+	this.is_shooting = false;
 	this.action = "running";
 	this.spawn = function(sx,sy){
 		this.box = document.createElement("DIV");
@@ -290,26 +291,114 @@ function opfor(name, html_id,idnum){
 	};
 	var right_action ={
 		'standing': {'y': 0 , 'x': [0,0,0,0,0,0,0,0,2,0,0,0]},
-		'running': {'y': 2 , 'x': [0,1,2,3,4,5,6]}
+		'running': {'y': 2 , 'x': [0,1,2,3,4,5,6]},
+		'shooting': {'y': 4, 'x': [7,6,5,4,4,4,4,4,4,4,4,4,6,7]}
 	}
 	var left_action = {
 		'standing': {'y': 0 , 'x': [0,0,0,0,0,0,0,0,0,0,2,0]},
-		'running': {'y': 1 , 'x': [0,1,2,3,4,5,6]}
+		'running': {'y': 1 , 'x': [0,1,2,3,4,5,6]},
+		'shooting': {'y': 4, 'x': [0,1,2,3,3,3,3,3,3,3,3,3,2,1]}
 	};
 	var misc_action = {
 		'death': {'y': 3 , 'x': [0,1,2,3,4,5,6,7,8,9]}
 	}
+	var beam_action = {
+		'pulse': {'y': [1,2,3,4,5,6] , 'x':0}
+	};
+	this.b_counter = 0;
+	this.b_action = 'pulse';
+	this.b_active = 0;
+	this.b_facing = this.facing;
+	this.b_cooldown = 0;
 	this.drawSprite = function(top,left){
-		$("#"+this.id).css('background', "url('shooter_opfor.png') "+left*(-100)+"px "+top*(-100)+"px").css('left', this.x_pos+"px").css('top', this.y_pos+"px");
+		$("#"+this.id).css('background', "url('shooter_opfor.png') "+left*(-100)+"px "+top*(-100)+"px").css('left', this.x_pos+"px").css('top', this.y_pos+"px").css('z-index','3');
+	};
+	this.destroy_beam = function(id){
+		//if(document.getElementById(id)){
+			$("#"+id).remove();
+			//$('#'+this.bbox.id).each().remove();
+			this.b_active = 0;
+			this.b_cooldown = 100;
+		//};
+		
+	};
+	this.spawn_beam = function(){
+		this.bx_pos = 0;
+		this.by_pos = 0;
+		this.bbox = document.createElement("DIV");
+		this.bbox.height = 40;
+		this.bbox.width = 900;
+		this.bbox.id = 'beam'+this.name;
+		document.body.appendChild(this.bbox);
+		this.by_pos = this.y_pos;
+		if(facing == 'right'){
+			this.bx_pos = this.x_pos+50;
+			//console.log(this.bx_pos);
+			$("#"+this.bbox.id).css('background', "url('shooter_beam.png')" + this.bx_pos +"px").css('left', this.bx_pos + "px").css('top', this.by_pos+23+"px").css('height','10px').css('width',990-this.x_pos + 'px').addClass('.beam').css('position', 'absolute');
+		}else{
+			this.bx_pos = this.x_pos-860;
+			//console.log(this.bx_pos);
+			$("#"+this.bbox.id).css('background', "url('shooter_beam.png')" + this.bx_pos +"px").css('left', this.bx_pos + "px").css('top', this.by_pos+23+"px").css('height','10px').css('width','900px').addClass('.beam').css('position', 'absolute');
+		}	
+		this.b_active = 1;
+		this.b_facing = facing;
+	};
+	this.beam = function(top,left){
+		if(this.b_counter > 13){
+			this.destroy_beam(this.bbox.id);
+			this.b_coutner = 0;
+		}else{
+			$("#"+this.box.id).css('background', "url('shooter_beam.png') "+left+"px "+top*(-10)+"px")
+		};
+		
+	};
+	this.beam_pass = function(){
+		if(this.b_counter++ > 3){
+			if(this.b_active){
+				this.beam(beam_action[this.b_action].y[this.b_counter], beam_action[this.b_action].x);
+			}else{
+			this.spawn_beam();
+			};
+		};
+	};
+	this.detect_player = function(){
+		console.log(player.y_pos+player.hitbox['height'],this.y_pos-20);
+		console.log(player.y_pos,this.y_pos+this.hitbox['height']+20);
+		if((player.y_pos+player.hitbox['height'] < this.y_pos+20)||(player.y_pos > this.y_pos+this.hitbox['height']-20)||this.falling || this.b_cooldown > 0){
+			this.is_shooting = false;
+			this.action = 'running';
+			this.b_cooldown--;
+			return;
+		}else{
+			if(player.x_pos > this.x_pos){
+				facing = 'right';
+			}else{
+				facing = 'left';
+			}
+			this.action = 'shooting';
+			//this.b_active = 1;
+			this.is_shooting = true;
+		};
 	};
 	this.update = function(){
 		
+		//console.log(this.action,right_action[this.action].x.length);
 		if(this.action == 'death'){
+			/*
+			if($('#'+this.bbox.id).length > 0){
+				this.destroy_beam(this.bbox.id);
+			}*/
+			var trash = document.getElementById('beam'+this.name);
+			if(trash != null){
+				this.destroy_beam(this.bbox.id);
+			};
+			
+			this.is_shooting = false;
 			//console.log(this.name, this.action, this.id, counter, d_counter);
-			for(var z in g.opfor_team){
+			//for(var z in g.opfor_team){
 				
 				//console.log(g.opfor_team[z]);
-			};
+			//};
 			if(d_counter >= misc_action[this.action].x.length){
 				d_counter = 0;
 				this.x_pos = -100;
@@ -324,15 +413,38 @@ function opfor(name, html_id,idnum){
 				
 			}else{
 				this.drawSprite(misc_action[this.action].y, misc_action[this.action].x[d_counter++]);
+				return;
 			};
+		}else if(this.action == 'shooting' && this.is_shooting){
+			
+				this.beam_pass();
+				
+			
+			if(facing == 'right'){
+				if(counter >= right_action[this.action].x.length){
+					counter = 0;
+					this.is_shooting = false;
+					
+				};
+				this.drawSprite(right_action[this.action].y, right_action[this.action].x[counter++]);
+				return;
+			}else if(counter >= left_action[this.action].x.length){
+					counter = 0;
+					this.is_shooting = false;
+					
+				};
+				this.drawSprite(left_action[this.action].y, left_action[this.action].x[counter++]);
+				return;
+
 		}else{
+
 				var allow_xl = allow_xr = allow_yd =allow_yu = true;
 				if(this.x_pos > 910){allow_xr = false;};
 				if(this.x_pos < 10){allow_xl = false;}; 
 				if(this.y_pos > 590){allow_yd = false;};
 				if(this.y_pos < 10){allow_yu = false;};
 
-
+				//$('#'+this.bbox.id).each().remove();
 			if(this.falling){
 				if(allow_yd){this.y_pos+=15;};
 			}
@@ -375,7 +487,7 @@ function game(){
 		m.build_floors();
 		player = new O_robot("player","robot1");
 		player.spawn(m.mapinfo.map1.player_start[0],m.mapinfo.map1.player_start[1]);
-		//this.spawn_opfor();
+		this.spawn_opfor();
 	};
 
 	this.spawn_opfor = function(){
@@ -398,6 +510,11 @@ function game(){
 				this.opfor_team[zz].update();
 			};
 		};
+		for(var zzz in this.opfor_team){
+			if(this.opfor_team[zzz].action !='dead' && this.opfor_team[zzz].action != 'death'){
+				this.opfor_team[zzz].detect_player();
+			};
+		};
 		this.f_spawn_timer();
 	};
 	this.f_spawn_timer = function(){
@@ -406,7 +523,7 @@ function game(){
 			this.spawn_timer = 0;
 		};
 	};
-	this.hit = function(item1,isbullet,item2){
+	this.hit = function(item1,isbullet,item2,isbeam){
 		if(isbullet == 1){
 			var test_box1 = item1.bullet_hitbox;
 			var x1 = item1.bx_pos;
@@ -416,11 +533,18 @@ function game(){
 			var x1 = item1.x_pos;
 			var y1 = item1.y_pos;
 		};
-		
-		var test_box2 = item2.hitbox;
-		var x2 = item2.x_pos;
-		var y2 = item2.y_pos;
-		console.log(x1,x2,' :: ',y1,y2);
+		if(isbeam == 1){
+			return true;
+			var test_box2 = {'height': 10,
+					'width': 0};
+			var x2 = 1000;
+			var y2 = item1.by_pos;
+		}else{
+			var test_box2 = item2.hitbox;
+			var x2 = item2.x_pos;
+			var y2 = item2.y_pos;
+		}
+		//console.log(x1,x2,' :: ',y1,y2);
 		if((x1 >= x2+test_box2['width'])||(x1 <= x2)){
 			return false;
 		}
@@ -433,14 +557,23 @@ function game(){
 	this.is_hit = function(){
 		for (var z in this.opfor_team){
 			if(player.b_active == 1 && player.b_action != 'death'){
-				if(this.hit(player,1,this.opfor_team[z])){
+				if(this.hit(player,1,this.opfor_team[z],0)){
 					
 					player.b_action = 'death';
 					this.opfor_team[z].action='death';
 				};
 			};
-			if(this.opfor_team[z].action != 'dead'){
-				if(this.hit(player,0,this.opfor_team[z])){
+			if(this.opfor_team[z].b_active == 1 && this.opfor_team[z].action != 'dead' && this.opfor_team[z].action !='death'){
+				if(this.hit(player,0,this.opfor_team[z],1)){
+					player.health -= 1;
+					if(!this.is_player_alive()){
+						alert("You died!");
+					};
+					
+				};
+			};
+			if(this.opfor_team[z].action != 'dead' && this.opfor_team[z].action !='death'){
+				if(this.hit(player,0,this.opfor_team[z],0)){
 					player.health -= 10;
 					if(!this.is_player_alive()){
 						alert("You died!");

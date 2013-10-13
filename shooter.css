@@ -29,3 +29,8 @@
 	z-index: -1;
 	
 }
+.beam{
+	display: inline-block;
+	position: absolute;
+	z-index: 2;
+}
