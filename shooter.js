@@ -22,6 +22,22 @@ document.checkkey = function(k){
 			player.update_status('standing',player.facing);
 		}
 };*/
+
+score_sound = new Audio("score.wav");
+player_death = new Audio("player_death.wav");
+player_shot = new Audio("player_shot.wav");
+op_death = new Audio("op_death.wav");
+opfor_beam = new Audio("opfor_beam.wav");
+
+gameSong = new Audio("shooter_gamesong_alt(loop).wav");
+
+gameSong.addEventListener('ended', function(){
+		this.currentTime=0;
+		this.play();
+}, false);
+//gameSong.play();
+
+
 document.onkeydown = function(k){
 	
 	switch(k.keyCode){
@@ -226,7 +242,7 @@ function O_robot(name, html_id){
 		$("#"+'bullet').css('background', "url('shooter_bullet.png') 0px " + this.bx_pos +"px").css('left', this.bx_pos + "px").css('top', this.by_pos+30+"px").css('height','40px').css('width','40px');	
 		this.b_active = 1;
 		this.b_facing = this.facing;
-		
+		player_shot.play();
 		
 		
 		};
@@ -355,6 +371,7 @@ function opfor(name, html_id,idnum){
 		}	
 		this.b_active = 1;
 		this.b_facing = facing;
+		opfor_beam.play();
 	};
 	this.beam = function(top,left){
 		if(this.b_counter > 13){
@@ -513,6 +530,7 @@ function game(){
 	};
 	this.init = function(){
 		this.is_inLoop = true;
+		gameSong.play();
 		m.drawmap('map1');
 		m.build_floors();
 		player = new O_robot("player","robot1");
@@ -525,13 +543,27 @@ function game(){
 		g.team_update();
 		g.is_hit();
 		g.is_playing();
+
+		
 	};
 	this.is_playing = function(){
 		if(!this.is_inLoop){
 			$('#player').remove();
 			for(z in this.opfor_team){
-				$('#'+this.opfor_team[z].id).remove();
+				
+				try{
+					this.opfor_team[z].destroy_beam();
+					$('#'+this.opfor_team[z].id).remove();
+				}catch(err){
+					console.log('no beams');
+				};
 			};
+			try{
+				player.destroy_bullet();
+			}catch(err){
+					console.log('no bullet');
+				};
+			m.remove_floors();
 			this.opfor_team = [];
 			this.menu();
 		};
@@ -608,6 +640,7 @@ function game(){
 					
 					player.b_action = 'death';
 					this.opfor_team[z].action='death';
+					op_death.play();
 				};
 			};
 			if(this.opfor_team[z].b_active == 1 && this.opfor_team[z].action != 'dead' && this.opfor_team[z].action !='death'){
@@ -666,6 +699,7 @@ function game(){
 
 function O_map(){
 	this.floorcount = 0;
+	var floors = new Array();
 	this.mapinfo = {
 		'menu': {'file': 'menu_screen.png'},
 		'map1': {'file': 'map_1.png',
@@ -705,7 +739,7 @@ function O_map(){
 		this.box.id = this.id;
 		document.body.appendChild(this.box);
 		$("#"+this.id).css('display','inline-block').css('position','absolute').css('left', (xf0 * 100)+10 +'px').css('top', (yf * 100)+10 + "px").css('width', xf1*100 + 'px').css('height', '10px').addClass('floor');
-		
+		floors.push(this.id);
 	};
 	this.build_floors = function(){
 		//console.log();
@@ -714,6 +748,14 @@ function O_map(){
 			this.lay_floor(this.mapinfo.map1.floors[f].y, this.mapinfo.map1.floors[f].x[0], this.mapinfo.map1.floors[f].x[1]);
 		}
 	};
+
+	this.remove_floors = function(){
+		for(f in floors){
+			$("#"+floors[f]).remove();
+		}
+		
+	};
+
 };
 
 
