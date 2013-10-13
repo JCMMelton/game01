@@ -10,8 +10,9 @@
 	<script type="text/javascript">
 		$(document).ready(function(){
 			g = new game();
-			g.init();
-			setInterval(gameLoop,75);
+			var gamespeed = setInterval(g.gameLoop,75);
+			g.menu();
+			//setInterval(gameLoop,75);
 		});
 	</script>
 

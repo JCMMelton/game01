@@ -1,5 +1,5 @@
 
-
+/*
 function gameLoop(){
 	player.game_func();
 	
@@ -25,6 +25,8 @@ document.checkkey = function(k){
 document.onkeydown = function(k){
 	
 	switch(k.keyCode){
+
+			
 		case 90:
 			player.update_status('shooting',player.facing);
 			player.spawn_bullet();
@@ -49,7 +51,14 @@ document.onkeydown = function(k){
 			}
 			player.update_status('jumping',player.facing);
 			break;
-	}
+		case 13:
+			if(!g.is_inLoop){
+				g.init();
+				break;
+			};
+		default:
+
+	};
 };
 document.onkeyup = function(k){
 	player.update_status('standing',player.facing);
@@ -292,24 +301,25 @@ function opfor(name, html_id,idnum){
 	var right_action ={
 		'standing': {'y': 0 , 'x': [0,0,0,0,0,0,0,0,2,0,0,0]},
 		'running': {'y': 2 , 'x': [0,1,2,3,4,5,6]},
-		'shooting': {'y': 4, 'x': [7,6,5,4,4,4,4,4,4,4,4,4,6,7]}
+		'shooting': {'y': 4, 'x': [7,6,5,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,6,7]}
 	}
 	var left_action = {
 		'standing': {'y': 0 , 'x': [0,0,0,0,0,0,0,0,0,0,2,0]},
 		'running': {'y': 1 , 'x': [0,1,2,3,4,5,6]},
-		'shooting': {'y': 4, 'x': [0,1,2,3,3,3,3,3,3,3,3,3,2,1]}
+		'shooting': {'y': 4, 'x': [0,1,2,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,2,1]}
 	};
 	var misc_action = {
 		'death': {'y': 3 , 'x': [0,1,2,3,4,5,6,7,8,9]}
 	}
 	var beam_action = {
-		'pulse': {'y': [1,2,3,4,5,6] , 'x':0}
+		'pulse': {'y': [1,7,3,12,19,0] , 'x':0}
 	};
 	this.b_counter = 0;
 	this.b_action = 'pulse';
 	this.b_active = 0;
 	this.b_facing = this.facing;
 	this.b_cooldown = 0;
+	this.b_timer = 0;
 	this.drawSprite = function(top,left){
 		$("#"+this.id).css('background', "url('shooter_opfor.png') "+left*(-100)+"px "+top*(-100)+"px").css('left', this.x_pos+"px").css('top', this.y_pos+"px").css('z-index','3');
 	};
@@ -318,6 +328,7 @@ function opfor(name, html_id,idnum){
 			$("#"+id).remove();
 			//$('#'+this.bbox.id).each().remove();
 			this.b_active = 0;
+			this.b_timer = 0;
 			this.b_cooldown = 100;
 		//};
 		
@@ -334,11 +345,13 @@ function opfor(name, html_id,idnum){
 		if(facing == 'right'){
 			this.bx_pos = this.x_pos+50;
 			//console.log(this.bx_pos);
-			$("#"+this.bbox.id).css('background', "url('shooter_beam.png')" + this.bx_pos +"px").css('left', this.bx_pos + "px").css('top', this.by_pos+23+"px").css('height','10px').css('width',990-this.x_pos + 'px').addClass('.beam').css('position', 'absolute');
+			/*""+ this.bx_pos +"px*/
+			$("#"+this.bbox.id).css('background', "url('shooter_beam.png') 0px 200px").css('left', this.bx_pos + "px").css('top', this.by_pos+25+"px").css('height','5px').css('width',990-this.x_pos + 'px').addClass('.beam').css('position', 'absolute');
 		}else{
 			this.bx_pos = this.x_pos-860;
 			//console.log(this.bx_pos);
-			$("#"+this.bbox.id).css('background', "url('shooter_beam.png')" + this.bx_pos +"px").css('left', this.bx_pos + "px").css('top', this.by_pos+23+"px").css('height','10px').css('width','900px').addClass('.beam').css('position', 'absolute');
+			/*"+ this.bx_pos +"px*/
+			$("#"+this.bbox.id).css('background', "url('shooter_beam.png') 0px 200px").css('left', this.bx_pos + "px").css('top', this.by_pos+25+"px").css('height','5px').css('width','900px').addClass('.beam').css('position', 'absolute');
 		}	
 		this.b_active = 1;
 		this.b_facing = facing;
@@ -348,17 +361,22 @@ function opfor(name, html_id,idnum){
 			this.destroy_beam(this.bbox.id);
 			this.b_coutner = 0;
 		}else{
-			$("#"+this.box.id).css('background', "url('shooter_beam.png') "+left+"px "+top*(-10)+"px")
+			//console.log($("#"+'beam'+this.name).css('background', "url('shooter_beam.png') "+left+"px "+top*(-10)+"px"));
+			$("#"+'beam'+this.name).css('background', "url('shooter_beam.png') "+left+"px "+top*(-10)+"px");
 		};
 		
 	};
 	this.beam_pass = function(){
-		if(this.b_counter++ > 3){
+		if(this.b_timer++ > 5){
 			if(this.b_active){
-				this.beam(beam_action[this.b_action].y[this.b_counter], beam_action[this.b_action].x);
-			}else{
-			this.spawn_beam();
-			};
+					this.beam(beam_action[this.b_action].y[this.b_counter++], beam_action[this.b_action].x);
+					//this.beam(this.b_counter,0);
+				}else{
+				this.spawn_beam();
+				};
+			/*if(this.b_counter++ > 3){
+				
+			};*/
 		};
 	};
 	this.detect_player = function(){
@@ -378,6 +396,7 @@ function opfor(name, html_id,idnum){
 			this.action = 'shooting';
 			//this.b_active = 1;
 			this.is_shooting = true;
+
 		};
 	};
 	this.update = function(){
@@ -478,16 +497,44 @@ function opfor(name, html_id,idnum){
 function game(){
 	this.opfor_team = new Array();
 	this.spawn_timer = 0;
+	this.is_inLoop = false;
 	m = new O_map();
 	var idnum = 0;
-
+	this.menu = function(){
+		m.drawmap('menu');
+		clearInterval(gamespeed);
+		/*
+		document.onkeydown = function(k){
+	
+			if(k.keyCode == 13){
+				g.init();
+			};
+		};*/
+	};
 	this.init = function(){
-		
-		m.drawmap();
+		this.is_inLoop = true;
+		m.drawmap('map1');
 		m.build_floors();
 		player = new O_robot("player","robot1");
 		player.spawn(m.mapinfo.map1.player_start[0],m.mapinfo.map1.player_start[1]);
 		this.spawn_opfor();
+	};
+	this.gameLoop = function(){
+		player.game_func();
+		g.is_falling(player);
+		g.team_update();
+		g.is_hit();
+		g.is_playing();
+	};
+	this.is_playing = function(){
+		if(!this.is_inLoop){
+			$('#player').remove();
+			for(z in this.opfor_team){
+				$('#'+this.opfor_team[z].id).remove();
+			};
+			this.opfor_team = [];
+			this.menu();
+		};
 	};
 
 	this.spawn_opfor = function(){
@@ -567,7 +614,9 @@ function game(){
 				if(this.hit(player,0,this.opfor_team[z],1)){
 					player.health -= 1;
 					if(!this.is_player_alive()){
-						alert("You died!");
+						//alert("You died!");
+						console.log("You died!");
+						this.is_inLoop = false;
 					};
 					
 				};
@@ -576,7 +625,9 @@ function game(){
 				if(this.hit(player,0,this.opfor_team[z],0)){
 					player.health -= 10;
 					if(!this.is_player_alive()){
-						alert("You died!");
+						this.is_inLoop = false;
+						console.log("You died!");
+						//alert("You died!");
 					};
 				};
 			};
@@ -616,6 +667,7 @@ function game(){
 function O_map(){
 	this.floorcount = 0;
 	this.mapinfo = {
+		'menu': {'file': 'menu_screen.png'},
 		'map1': {'file': 'map_1.png',
 				'dimentions': [1000,1000],
 				'player_start': [400,200],
@@ -630,14 +682,21 @@ function O_map(){
 						{'y': 6.8, 'x': [0,10]}]
 			}
 		};
-	this.drawmap = function(){
+	this.drawmap = function(map_name){
 		var gb = document.getElementById("map");
 		var board = gb.getContext("2d");
 		gb.height = 700;
 		gb.width = 1000;
+		var map_file = '';
+		if(map_name == 'map1'){
+			map_file = this.mapinfo.map1.file;
+		}else if(map_name =='menu'){
+			map_file = this.mapinfo.menu.file;
+		};
+		
 		//board.fillStyle = "#bbbbbb";
 		//board.fillRect(0,0,1000,500);
-		$("#map").css('background', 'URL(' + this.mapinfo.map1.file + ') 0px 0px').css('top', '-300px');
+		$("#map").css('background', 'URL(' + map_file + ') 0px 0px').css('top', '-300px');
 	};
 
 	this.lay_floor = function(yf,xf0,xf1){
