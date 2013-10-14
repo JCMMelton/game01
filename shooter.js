@@ -29,8 +29,8 @@ player_shot = new Audio("player_shot.wav");
 op_death = new Audio("op_death.wav");
 opfor_beam = new Audio("opfor_beam.wav");
 
-gameSong = new Audio("shooter_gamesong_alt(loop).wav");
-
+//gameSong = new Audio("shooter_gamesong(loop).wav");
+gameSong = new Audio("little_loop.wav");
 gameSong.addEventListener('ended', function(){
 		this.currentTime=0;
 		this.play();
@@ -526,11 +526,11 @@ function opfor(name, html_id, idnum){
 function goal_thing(idnum){
 	this.idnum = idnum;
 	var allowedx = [2,3,4,5,6,7,2,3,4,5,6,7];
-	var allowedy = [3,4,5,6,2,3,4,5,4,5,4,5];
+	var allowedy = [3,4,5,2,2,3,4,5,4,5,4,5];
 	this.x_pos = (allowedx[Math.round(Math.random()*10)]*100); 
-	this.y_pos = (allowedy[Math.round(Math.random()*10)]*100)+10;
-	this.hitbox = { 'height': 30,
-					'width': 30};
+	this.y_pos = (allowedy[Math.round(Math.random()*10)]*100)-20;
+	this.hitbox = { 'height': 40,
+					'width': 40};
 	console.log(this.x_pos,this.y_pos);
 	this.spawn = function(){
 		this.box = document.createElement("DIV");
@@ -581,7 +581,7 @@ function game(){
 	};
 	this.init = function(){
 		this.is_inLoop = true;
-		//gameSong.play();
+		gameSong.play();
 		m.drawmap('map2');
 		m.build_floors();
 		player = new O_robot("player","robot1");
@@ -626,7 +626,7 @@ function game(){
 			}catch(err){
 				console.log('no ball!');
 			}
-			window.setTimeout(this.menu(),5000);
+			//window.setTimeout(this.menu(),5000);
 			//this.menu();
 			/*if(this.win){
 				
@@ -696,7 +696,7 @@ function game(){
 		this.f_spawn_timer();
 	};
 	this.f_spawn_timer = function(){
-		if(this.spawn_timer++>50){
+		if(this.spawn_timer++>30){
 			this.spawn_opfor();
 			this.spawn_timer = 0;
 		};
