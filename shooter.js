@@ -97,7 +97,7 @@ function O_robot(name, html_id){
 	this.by_pos = 0;
 	this.hitbox = { 'height': 100,
 					'width': 60};
-	this.bullet_hitbox = { 'height': 40,
+	this.bullet_hitbox = { 'height': 30,
 							'width': 40};
 	var b_counter = 0;
 
@@ -292,7 +292,7 @@ function O_robot(name, html_id){
 	};
 };
 
-function opfor(name, html_id,idnum){
+function opfor(name, html_id, idnum){
 	this.id = html_id;
 	this.name = name;
 	this.idnum = idnum;
@@ -300,7 +300,7 @@ function opfor(name, html_id,idnum){
 	this.y_pos = 0;
 	var counter = 0;
 	var d_counter = 0;
-	this.hitbox = {'height': 100,
+	this.hitbox = {'height': 90,
 					'width': 70};
 	var facing = 'right';
 	this.falling = true;
@@ -310,6 +310,8 @@ function opfor(name, html_id,idnum){
 		this.box = document.createElement("DIV");
 		this.box.height = 95;
 		this.box.width = 95;
+		this.x_pos = sx;
+		this.y_pos = sy;
 		this.box.id = html_id;
 		document.body.appendChild(this.box);
 		$("#"+this.id).css('background', "url('shooter_opfor.png') 0px 0px").css('width', '100px').css('height', '100px').css('display','inline-block').css('position','absolute').css('left',sx+"px").css('top',sy+"px");	
@@ -397,8 +399,8 @@ function opfor(name, html_id,idnum){
 		};
 	};
 	this.detect_player = function(){
-		console.log(player.y_pos+player.hitbox['height'],this.y_pos-20);
-		console.log(player.y_pos,this.y_pos+this.hitbox['height']+20);
+		//console.log(player.y_pos+player.hitbox['height'],this.y_pos-20);
+		//console.log(player.y_pos,this.y_pos+this.hitbox['height']+20);
 		if((player.y_pos+player.hitbox['height'] < this.y_pos+20)||(player.y_pos > this.y_pos+this.hitbox['height']-20)||this.falling || this.b_cooldown > 0){
 			this.is_shooting = false;
 			this.action = 'running';
@@ -511,12 +513,50 @@ function opfor(name, html_id,idnum){
 	};
 };
 
+function goal_thing(idnum){
+	this.idnum = idnum;
+	var allowedx = [2,3,4,5,6,7,2,3,4,5,6,7];
+	var allowedy = [1,2,3,4,5,6,1,2,3,4,5];
+	this.x_pos = (allowedx[Math.round(Math.random()*10)]*100); 
+	this.y_pos = (allowedy[Math.round(Math.random()*10)]*100)-10;
+	this.hitbox = { 'height': 20,
+					'width': 20};
+	console.log(this.x_pos,this.y_pos);
+	this.spawn = function(){
+		this.box = document.createElement("DIV");
+		this.box.height = 50;
+		this.box.width = 50;
+		this.box.id = 'goal'+this.idnum;
+		document.body.appendChild(this.box);
+		$("#"+this.box.id).css('background', "url('goal_thing_test.png') 0px 0px").css('width', '50px').css('height', '50px').css('display','inline-block').css('position','absolute').css('left',this.x_pos+"px").css('top',this.y_pos+"px");
+	};
+	this.destroy = function(){
+		document.body.removeChild(document.getElementById(this.box.id));
+		//$("#"+this.box.id).remove();
+	};
+	/*
+	this.rotate = function(){
+		var internal_count = 0;
+		var shift_count = 0;
+		if(internal_count = 3 && shift_count != 0){
+			internal_count = 0;
+			shift_count =0
+		}else{
+			shift_count++;
+		};
+		$("#"+this.box.id).css('background', "url('shooter_thing.png') 0px 0px").css('top', (shift_count * -50) +'px').css('left', (++internal_count * -50) +'px');
+	};*/
+};//end of goal_thing()
+
+
 function game(){
 	this.opfor_team = new Array();
 	this.spawn_timer = 0;
 	this.is_inLoop = false;
 	m = new O_map();
 	var idnum = 0;
+	var goal_count = 0;
+	this.player_has_ball = false;
 	this.menu = function(){
 		m.drawmap('menu');
 		clearInterval(gamespeed);
@@ -531,11 +571,13 @@ function game(){
 	this.init = function(){
 		this.is_inLoop = true;
 		gameSong.play();
-		m.drawmap('map1');
+		m.drawmap('map2');
 		m.build_floors();
 		player = new O_robot("player","robot1");
-		player.spawn(m.mapinfo.map1.player_start[0],m.mapinfo.map1.player_start[1]);
-		this.spawn_opfor();
+		player.spawn(m.mapinfo.map2.player_start[0],m.mapinfo.map2.player_start[1]);
+		this.spawn_opfor(m.mapinfo.map2.opfor_start[0],m.mapinfo.map2.opfor_start[1]);
+		this.spawn_goal();
+
 	};
 	this.gameLoop = function(){
 		player.game_func();
@@ -543,8 +585,8 @@ function game(){
 		g.team_update();
 		g.is_hit();
 		g.is_playing();
-
-		
+		g.score_goal();
+		g.check_net();
 	};
 	this.is_playing = function(){
 		if(!this.is_inLoop){
@@ -565,6 +607,13 @@ function game(){
 				};
 			m.remove_floors();
 			this.opfor_team = [];
+
+			try{
+				g.thing.destroy();
+			}catch(err){
+				console.log('no ball!');
+			}
+			
 			this.menu();
 		};
 	};
@@ -578,8 +627,30 @@ function game(){
 		name.action = 'running';
 		this.opfor_team.splice(this.ind,0,name);
 		
-		name.spawn(m.mapinfo.map1.opfor_start[0],m.mapinfo.map1.opfor_start[1]);
+		name.spawn(m.mapinfo.map2.opfor_start[0],m.mapinfo.map2.opfor_start[1]);
 	};
+	this.spawn_goal = function(){
+		this.idnum = idnum++;
+		this.thing = 'thing'+this.idnum;
+		this.thing = new goal_thing(this.idnum);
+
+		this.thing.spawn();
+		console.log(this.thing);
+		console.log(this.thing.x_pos,this.thing.y_pos);
+
+	};
+	this.check_net = function(){
+		net = new Object();
+		net.hitbox = {'height': 70, 'width': 70};
+		net.x_pos = m.mapinfo.map2.net[0];
+		net.y_pos = m.mapinfo.map2.net[1];
+		if(this.hit(player,0,net,0) && this.player_has_ball){
+			alert('You WIN!');
+			this.inLoop = false;
+
+		};
+	};
+
 	this.team_update = function(){
 		for(z in g.opfor_team){
 			g.is_falling(g.opfor_team[z]);
@@ -597,7 +668,7 @@ function game(){
 		this.f_spawn_timer();
 	};
 	this.f_spawn_timer = function(){
-		if(this.spawn_timer++>100){
+		if(this.spawn_timer++>50){
 			this.spawn_opfor();
 			this.spawn_timer = 0;
 		};
@@ -623,16 +694,29 @@ function game(){
 			var x2 = item2.x_pos;
 			var y2 = item2.y_pos;
 		}
-		//console.log(x1,x2,' :: ',y1,y2);
+		if(item2 == g.thing){console.log(x1,x2,' :: ',y1,y2);};
+		//console.log(item1,item2);
 		if((x1 >= x2+test_box2['width'])||(x1 <= x2)){
 			return false;
 		}
-		if((y1 >= y2+test_box2['height'])||(y1+test_box1['height'] <= y2)){
+		if((y1 >= y2+test_box2['height'])||(y1+test_box1['height']<= y2)){
 			return false;
+			//y1+test_box1['height']
 		}
 		return true;
 	};
+
+	this.score_goal = function(){
 	
+		if(this.hit(player,0,g.thing,0)){
+			score_sound.play();
+			console.log('goal');
+			g.thing.destroy();
+			this.player_has_ball = true;
+
+		};
+	};
+
 	this.is_hit = function(){
 		for (var z in this.opfor_team){
 			if(player.b_active == 1 && player.b_action != 'death'){
@@ -649,6 +733,7 @@ function game(){
 					if(!this.is_player_alive()){
 						//alert("You died!");
 						console.log("You died!");
+						player_death.play();
 						this.is_inLoop = false;
 					};
 					
@@ -658,8 +743,10 @@ function game(){
 				if(this.hit(player,0,this.opfor_team[z],0)){
 					player.health -= 10;
 					if(!this.is_player_alive()){
-						this.is_inLoop = false;
+						
 						console.log("You died!");
+						player_death.play();
+						this.is_inLoop = false;
 						//alert("You died!");
 					};
 				};
@@ -702,10 +789,12 @@ function O_map(){
 	var floors = new Array();
 	this.mapinfo = {
 		'menu': {'file': 'menu_screen.png'},
+		'victory': {'file': ''},
+		'defeat': {'file': ''},
 		'map1': {'file': 'map_1.png',
 				'dimentions': [1000,1000],
 				'player_start': [400,200],
-				'opfor_start':	[100,0],		
+				'opfor_start':	[100,50],//[100,0],		
 
 			'floors': [{'y': 5, 'x': [1,5]},
 						{'y': 4, 'x': [.5,1.5]},
@@ -714,7 +803,19 @@ function O_map(){
 						{'y': 2, 'x': [4,2]},
 						{'y': 1, 'x': [1,2]},
 						{'y': 6.8, 'x': [0,10]}]
-			}
+			},
+		'map2': {'file': 'map2.png',
+				'player_start': [600,500],
+				'opfor_start': [500,0],
+				'net': [400,0],
+				'floors': [{'y': 6, 'x': [2,6]},
+							{'y': 5, 'x': [4,2]},
+							{'y': 4, 'x': [1,2]},
+							{'y': 4, 'x': [7,2]},
+							{'y': 3, 'x': [3,4]},
+							{'y': 2, 'x': [1,3]},
+							{'y': 2, 'x': [6,3]},
+							{'y': 1, 'x': [4,2]}]}
 		};
 	this.drawmap = function(map_name){
 		var gb = document.getElementById("map");
@@ -726,6 +827,8 @@ function O_map(){
 			map_file = this.mapinfo.map1.file;
 		}else if(map_name =='menu'){
 			map_file = this.mapinfo.menu.file;
+		}else if(map_name =='map2'){
+			map_file = this.mapinfo.map2.file;
 		};
 		
 		//board.fillStyle = "#bbbbbb";
@@ -743,9 +846,9 @@ function O_map(){
 	};
 	this.build_floors = function(){
 		//console.log();
-		for(f in this.mapinfo.map1.floors){
+		for(f in this.mapinfo.map2.floors){
 			//console.log(this.mapinfo.map1.floors[f]);
-			this.lay_floor(this.mapinfo.map1.floors[f].y, this.mapinfo.map1.floors[f].x[0], this.mapinfo.map1.floors[f].x[1]);
+			this.lay_floor(this.mapinfo.map2.floors[f].y, this.mapinfo.map2.floors[f].x[0], this.mapinfo.map2.floors[f].x[1]);
 		}
 	};
 
