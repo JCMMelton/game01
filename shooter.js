@@ -302,7 +302,12 @@ function opfor(name, html_id, idnum){
 	var d_counter = 0;
 	this.hitbox = {'height': 90,
 					'width': 70};
+	
 	var facing = 'right';
+	if(Math.random() > .5){
+		facing = 'left';
+	};				
+	
 	this.falling = true;
 	this.is_shooting = false;
 	this.action = "running";
@@ -430,7 +435,11 @@ function opfor(name, html_id, idnum){
 			if(trash != null){
 				this.destroy_beam(this.bbox.id);
 			};
-			
+			try{
+				$("#"+'beam'+this.name).remove();
+			}catch(err){
+				console.log("no Beam!");
+			};
 			this.is_shooting = false;
 			//console.log(this.name, this.action, this.id, counter, d_counter);
 			//for(var z in g.opfor_team){
@@ -481,7 +490,8 @@ function opfor(name, html_id, idnum){
 				if(this.x_pos < 10){allow_xl = false;}; 
 				if(this.y_pos > 590){allow_yd = false;};
 				if(this.y_pos < 10){allow_yu = false;};
-
+				
+			
 				//$('#'+this.bbox.id).each().remove();
 			if(this.falling){
 				if(allow_yd){this.y_pos+=15;};
@@ -516,11 +526,11 @@ function opfor(name, html_id, idnum){
 function goal_thing(idnum){
 	this.idnum = idnum;
 	var allowedx = [2,3,4,5,6,7,2,3,4,5,6,7];
-	var allowedy = [1,2,3,4,5,6,1,2,3,4,5];
+	var allowedy = [3,4,5,6,2,3,4,5,4,5,4,5];
 	this.x_pos = (allowedx[Math.round(Math.random()*10)]*100); 
-	this.y_pos = (allowedy[Math.round(Math.random()*10)]*100)-10;
-	this.hitbox = { 'height': 20,
-					'width': 20};
+	this.y_pos = (allowedy[Math.round(Math.random()*10)]*100)+10;
+	this.hitbox = { 'height': 30,
+					'width': 30};
 	console.log(this.x_pos,this.y_pos);
 	this.spawn = function(){
 		this.box = document.createElement("DIV");
@@ -531,7 +541,14 @@ function goal_thing(idnum){
 		$("#"+this.box.id).css('background', "url('goal_thing_test.png') 0px 0px").css('width', '50px').css('height', '50px').css('display','inline-block').css('position','absolute').css('left',this.x_pos+"px").css('top',this.y_pos+"px");
 	};
 	this.destroy = function(){
-		document.body.removeChild(document.getElementById(this.box.id));
+		try{
+			document.body.removeChild(document.getElementById(this.box.id));
+			this.x_pos = 0;
+			this.y_pos = 0;
+		}catch(err){
+			console.log('no ball!');
+		};
+		
 		//$("#"+this.box.id).remove();
 	};
 	/*
@@ -553,6 +570,7 @@ function game(){
 	this.opfor_team = new Array();
 	this.spawn_timer = 0;
 	this.is_inLoop = false;
+	this.win = false;
 	m = new O_map();
 	var idnum = 0;
 	var goal_count = 0;
@@ -560,17 +578,10 @@ function game(){
 	this.menu = function(){
 		m.drawmap('menu');
 		clearInterval(gamespeed);
-		/*
-		document.onkeydown = function(k){
-	
-			if(k.keyCode == 13){
-				g.init();
-			};
-		};*/
 	};
 	this.init = function(){
 		this.is_inLoop = true;
-		gameSong.play();
+		//gameSong.play();
 		m.drawmap('map2');
 		m.build_floors();
 		player = new O_robot("player","robot1");
@@ -584,12 +595,14 @@ function game(){
 		g.is_falling(player);
 		g.team_update();
 		g.is_hit();
-		g.is_playing();
 		g.score_goal();
 		g.check_net();
+		g.is_playing();
+		console.log(g.is_inLoop);
 	};
 	this.is_playing = function(){
 		if(!this.is_inLoop){
+			
 			$('#player').remove();
 			for(z in this.opfor_team){
 				
@@ -613,8 +626,19 @@ function game(){
 			}catch(err){
 				console.log('no ball!');
 			}
+			window.setTimeout(this.menu(),5000);
+			//this.menu();
+			/*if(this.win){
+				
+				alert("VICTORY!");
+				m.drawmap('victory');
+				
+			}else{
+				alert("DEFEAT!");
+				m.drawmap('deafeat');
+				window.setTimeout(this.menu(),5000);
+			}*/
 			
-			this.menu();
 		};
 	};
 
@@ -645,8 +669,12 @@ function game(){
 		net.x_pos = m.mapinfo.map2.net[0];
 		net.y_pos = m.mapinfo.map2.net[1];
 		if(this.hit(player,0,net,0) && this.player_has_ball){
-			alert('You WIN!');
-			this.inLoop = false;
+			this.win = true;
+			g.is_inLoop = false;
+			//alert("VICTORY!");
+			this.is_playing();
+			m.drawmap('victory');
+
 
 		};
 	};
@@ -694,7 +722,7 @@ function game(){
 			var x2 = item2.x_pos;
 			var y2 = item2.y_pos;
 		}
-		if(item2 == g.thing){console.log(x1,x2,' :: ',y1,y2);};
+		//if(item2 == g.thing){console.log(x1,x2,' :: ',y1,y2);};
 		//console.log(item1,item2);
 		if((x1 >= x2+test_box2['width'])||(x1 <= x2)){
 			return false;
@@ -713,6 +741,8 @@ function game(){
 			console.log('goal');
 			g.thing.destroy();
 			this.player_has_ball = true;
+			
+			//this.inLoop = false;
 
 		};
 	};
@@ -735,6 +765,8 @@ function game(){
 						console.log("You died!");
 						player_death.play();
 						this.is_inLoop = false;
+						this.is_playing();
+						m.drawmap('deafeat');
 					};
 					
 				};
@@ -747,6 +779,8 @@ function game(){
 						console.log("You died!");
 						player_death.play();
 						this.is_inLoop = false;
+						this.is_playing();
+						m.drawmap('deafeat');
 						//alert("You died!");
 					};
 				};
@@ -789,14 +823,13 @@ function O_map(){
 	var floors = new Array();
 	this.mapinfo = {
 		'menu': {'file': 'menu_screen.png'},
-		'victory': {'file': ''},
-		'defeat': {'file': ''},
+		'victory': {'file': 'shooter_victory_screen.png'},
+		'defeat': {'file': 'shooter_defeat_screen.png'},
 		'map1': {'file': 'map_1.png',
 				'dimentions': [1000,1000],
 				'player_start': [400,200],
 				'opfor_start':	[100,50],//[100,0],		
-
-			'floors': [{'y': 5, 'x': [1,5]},
+				'floors': [{'y': 5, 'x': [1,5]},
 						{'y': 4, 'x': [.5,1.5]},
 						{'y': 4, 'x': [7,2]},
 						{'y': 3, 'x': [3,1]},
@@ -804,6 +837,7 @@ function O_map(){
 						{'y': 1, 'x': [1,2]},
 						{'y': 6.8, 'x': [0,10]}]
 			},
+
 		'map2': {'file': 'map2.png',
 				'player_start': [600,500],
 				'opfor_start': [500,0],
@@ -829,11 +863,19 @@ function O_map(){
 			map_file = this.mapinfo.menu.file;
 		}else if(map_name =='map2'){
 			map_file = this.mapinfo.map2.file;
+		}else if(map_name == 'victory'){
+			map_file = this.mapinfo.victory.file;
+		}else if(map_name == 'defeat'){
+			map_file = this.mapinfo.defeat.file;
 		};
 		
 		//board.fillStyle = "#bbbbbb";
 		//board.fillRect(0,0,1000,500);
-		$("#map").css('background', 'URL(' + map_file + ') 0px 0px').css('top', '-300px');
+		if(map_file != 'map2'){
+			$("#map").css('background', 'URL(' + map_file + ') 0px 0px').css('top', '-300px').css('z-index','10');
+		}else{
+			$("#map").css('background', 'URL(' + map_file + ') 0px 0px').css('top', '-300px').css('z-index','1');
+		};
 	};
 
 	this.lay_floor = function(yf,xf0,xf1){
