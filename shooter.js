@@ -766,7 +766,7 @@ function game(){
 						player_death.play();
 						this.is_inLoop = false;
 						this.is_playing();
-						m.drawmap('deafeat');
+						m.drawmap('defeat');
 					};
 					
 				};
@@ -780,7 +780,7 @@ function game(){
 						player_death.play();
 						this.is_inLoop = false;
 						this.is_playing();
-						m.drawmap('deafeat');
+						m.drawmap('defeat');
 						//alert("You died!");
 					};
 				};
@@ -868,7 +868,7 @@ function O_map(){
 		}else if(map_name == 'defeat'){
 			map_file = this.mapinfo.defeat.file;
 		};
-		
+		console.log(map_file);
 		//board.fillStyle = "#bbbbbb";
 		//board.fillRect(0,0,1000,500);
 		if(map_file != 'map2'){

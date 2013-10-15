@@ -16,42 +16,52 @@
 	left:0px;
 	z-index: 6;
 }
+#frame{
+	height: 700px;
+	width: 1000px;
+}
 #map{
 	height: 700px;
 	width: 1000px;
 	z-index: 1;
+	position: absolute;
 }
 #smog1{
 	height: 700px;
 	width: 1000px;
 	z-index: -5;
+	position: absolute;
 }
 #smog2{
 	height: 700px;
 	width: 1000px;
 	z-index: -7;
+	position: absolute;
 }
 #smog3{
 	height: 700px;
 	width: 1000px;
 	z-index: -11;
+	position: absolute;
 }
 #cityscape1{
 	height: 700px;
 	width: 1000px;
 	z-index: -9;
+	position: absolute;
 }
 #cityscape2{
 	height: 700px;
 	width: 1000px;
 	z-index: -13;
+	position: absolute;
 }
 #skybox{
 	height: 700px;
 	width: 1000px;
 	z-index: -15;
+	position: absolute;
 }
-
 
 /*
 .floor{

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title>Shooter ReWrite</title>
+	
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+	<script type="text/javascript" src="shooter_rewrite.js"></script>
+	<link rel="stylesheet" type="text/css" href="shooter_rewrite.css">
+	<script>
+		$(document).ready(function(){
+			var om = new O_map();
+			var pc = new O_player();
+			
+
+			pc.spawn();
+			om.drawmap();
+			om.mapdirection ='right';
+
+			testgameLoop = function(){
+				pc.move('right');
+				om.roll('right');
+			}
+
+
+			setInterval(testgameLoop, 75);
+			
+
+		});
+	</script>
+
+	
+
+
+</head>
+<body>
+	<div id="frame">
+		<canvas id="map"></canvas>
+		<canvas id="smog1"></canvas>
+		<canvas id="smog2"></canvas>
+		<canvas id="smog3"></canvas>
+		<canvas id="cityscape1"></canvas>
+		<canvas id="cityscape2"></canvas>
+		<canvas id="skybox"></canvas>
+	</div>
+</body>
+</html>
