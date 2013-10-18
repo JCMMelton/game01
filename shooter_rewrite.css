@@ -19,6 +19,8 @@
 #frame{
 	height: 700px;
 	width: 1000px;
+	overflow: hidden;
+	position: relative;
 }
 #map{
 	height: 700px;
@@ -70,6 +72,10 @@
 }*/
 .floor{
 	z-index: -1;
+}
+.floor2{
+	z-index: 6;
+	padding: 20px 0px 0px 0px;
 	
 }
 .beam{

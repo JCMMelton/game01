@@ -8,30 +8,34 @@
 	<script type="text/javascript" src="shooter_rewrite.js"></script>
 	<link rel="stylesheet" type="text/css" href="shooter_rewrite.css">
 	<script>
-		$(document).ready(function(){
-			
-			g = new O_game();
-			g.init();
-			
-			setInterval(g.gameLoop, 75);
-			
-
+	$(document).ready(function(){
+		$("#player").click(function(){
+			$(this).animate(background-xpos: -100;);
 		});
+	});
+
+
+
 	</script>
 
-	
+<style>
+	#player{
+		height: 100px;
+		width: 100px;
+		overflow: hidden;
+		background-image: url("shooter.png");
+		position: absolute;
+	}
+
+
+
+</style>
 
 
 </head>
 <body>
-	<div id="frame">
-		<canvas id="map"></canvas>
-		<canvas id="smog1"></canvas>
-		<canvas id="smog2"></canvas>
-		<canvas id="smog3"></canvas>
-		<canvas id="cityscape1"></canvas>
-		<canvas id="cityscape2"></canvas>
-		<canvas id="skybox"></canvas>
-	</div>
+<div id="player"></div>
+
+
 </body>
 </html>
